@@ -48,13 +48,33 @@
 				<button type="submit">Szerkeszt</button>
 				<button type="button" id="btn_edit_back">Mégsem</button>
 			</form>
+		</article>
+		<article style="margin-top: 10px;">
+			Kereső:
+			<input type="text" id="crud_filter" placeholder="Keresés">
+			Sorrend:
+			<select id="crud_order_field">
+				<option value="id">Hozzáadás ideje</option>
+				<option value="name">Név</option>
+				<option value="height">Magasság</option>
+				<option value="weight">Tömeg</option>
+			</select>
+			<select id="crud_order">
+				<option value="asc">Csökkenő</option>
+				<option value="desc">Növekvő</option>
+			</select>
         </article>
         <article id="crud_list"></article>
     </div>
     <footer>Készítők neptun kódja: NCCDTY, UXPEB6</footer>
 	<script>
 		code="NCCDTYbk77bn";
-		url="https://gamf-web1.asdika.dev/ajaxApi.php";
+		last_data	= {};
+		if (window.location.protocol === "https:") {
+			url="https://gamf-web1.asdika.dev/ajaxApi.php";
+		} else {
+			url="http://gamf.nhely.hu/ajax2/";
+		}
 		async function crud_read()
 		{
 			let formData = new FormData();
@@ -66,7 +86,10 @@
 				body: formData
 			})
 			.then(response => response.json())
-			.then(draw_table);
+			.then(function(data){
+				last_data	= data;
+				draw_table(data);
+			});
 		}
 		async function crud_create(name, height, weight)
 		{
@@ -82,8 +105,7 @@
 				body: formData
 			})
 			.then(response => response.json())
-			.then(function(data){
-				console.log(data);
+			.then(function(){
 				crud_read();
 			});
 			
@@ -105,8 +127,7 @@
 				body: formData
 			})
 			.then(response => response.json())
-			.then(function(data){
-				console.log(data);
+			.then(function(){
 				crud_read();
 			});
 			
@@ -125,8 +146,7 @@
 				body: formData
 			})
 			.then(response => response.json())
-			.then(function(data){
-				console.log(data);
+			.then(function(){
 				crud_read();
 			});
 			
@@ -143,10 +163,23 @@
 		}		
 		function draw_table(data)
 		{
-			console.log(data);
+			let filter		= document.getElementById("crud_filter").value.toLowerCase();
+		
+			let orderField	= document.getElementById("crud_order_field").value;
+			let order		= document.getElementById("crud_order").value;
+		
+			if(orderField == "name") {
+				data.list.sort((a, b) => a[orderField].localeCompare(b[orderField]) * (order == "asc" ? -1 : 1));
+			} else {
+				data.list.sort((a, b) => (Number(a[orderField]) - Number(b[orderField])) * (order == "asc" ? -1 : 1));
+			}
+		
 			str	= "<table>";
 			str	+= "<thead><tr><th>#</th><th>Név</th><th>Magasság</th><th>Tömeg</th><th></th></tr></thead>";
 			for(i = 0; i < data.list.length; i++) {
+				if(!data.list[i].name.toLowerCase().includes(filter) && !data.list[i].height.toLowerCase().includes(filter) && !data.list[i].weight.toLowerCase().includes(filter)) {
+					continue;
+				}
 				str	+= "<tr id=\"list_item_" + data.list[i].id + "\">";
 				str	+= "<td>#" + data.list[i].id + "</td>";
 				str	+= "<td class=\"col_name\">" + escapeHtml(data.list[i].name) + "</td>";
@@ -190,6 +223,8 @@
 			let weight	= document.getElementById("input_weight").value;
 			
 			crud_create(name, height, weight);
+			this.reset();
+			
 		});
 		
 		document.getElementById("edit_form").addEventListener("submit", function(e) {
@@ -208,6 +243,18 @@
 		document.getElementById("btn_edit_back").addEventListener("click", function(e) {
 			document.getElementById("create_form").classList.remove("d-none");
 			document.getElementById("edit_form").classList.add("d-none");
+		});
+		
+		document.getElementById("crud_filter").addEventListener("keyup", function(e) {
+			draw_table(last_data);
+		});
+		
+		document.getElementById("crud_order_field").addEventListener("change", function(e) {
+			draw_table(last_data);
+		});
+		
+		document.getElementById("crud_order").addEventListener("change", function(e) {
+			draw_table(last_data);
 		});
 		
 		window.onload = function() {
