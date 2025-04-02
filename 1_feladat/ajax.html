@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Web-programozás-1 - CRUD</title>
+    <link type="text/css" rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1 class="header">Web-programozás-1 Elméleti Házi feladat</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="crud.html" class="active">CRUD</a></li>
+            <li><a href="contact.html">Contact</a></li>
+        </ul>
+    </nav>
+    <aside>
+        <h1>Introduction</h1>
+    </aside>
+    <div class="content">
+        <h1>Crud functionality</h1>
+        <article>
+			<form id="create_form">
+				<label>
+					Név: <input type="text" name="name" placeholder="Név" id="input_name">
+				</label>
+				<label>
+					Magasság: <input type="number" name="height" placeholder="Magasság" id="input_height">
+				</label>
+				<label>
+					Tömeg: <input type="number" name="weight" placeholder="Tömeg" id="input_weight">
+				</label>
+				<button type="submit">Hozzáadás</button>
+			</form>
+		</article>
+		<article style="margin-top: 10px;">
+			Kereső:
+			<input type="text" id="crud_filter" placeholder="Keresés">
+			Sorrend:
+			<select id="crud_order_field">
+				<option value="id">Hozzáadás ideje</option>
+				<option value="name">Név</option>
+				<option value="height">Magasság</option>
+				<option value="weight">Tömeg</option>
+			</select>
+			<select id="crud_order">
+				<option value="asc">Csökkenő</option>
+				<option value="desc">Növekvő</option>
+			</select>
+        </article>
+        <article id="crud_list"></article>
+        <article>
+			<hr>
+			Sor szerkesztése
+			<form id="edit_form">
+				<div id="edit_form_id_input">
+					<input type="number" name="id" id="input_id_update">
+					<button type="button" id="btn_edit_load">Adatok betöltése szerkesztésre</button>
+				</div>
+				<div id="edit_form_inputs" class="d-none">
+					<label>
+						Név: <input type="text" name="name" placeholder="Név" id="input_name_update">
+					</label>
+					<label>
+						Magasság: <input type="number" name="height" placeholder="Magasság" id="input_height_update">
+					</label>
+					<label>
+						Tömeg: <input type="number" name="weight" placeholder="Tömeg" id="input_weight_update">
+					</label>
+					<button type="submit">Szerkeszt</button>
+					<button type="button" id="btn_edit_back">Mégsem</button>
+				</div>
+			</form>
+		</article>
+    </div>
+    <footer>Készítők neptun kódja: NCCDTY, UXPEB6</footer>
+	<script>
+		code="NCCDTYbk77bn";
+		last_data	= {};
+		if (window.location.protocol === "https:") {
+			url="https://gamf-web1.asdika.dev/ajaxApi.php";
+		} else {
+			url="http://gamf.nhely.hu/ajax2/";
+		}
+		async function crud_read()
+		{
+			let formData = new FormData();
+			formData.append("op", "read");
+			formData.append("code", code);
+			
+			fetch(url, {
+				method: "POST",
+				body: formData
+			})
+			.then(response => response.json())
+			.then(function(data){
+				last_data	= data;
+				draw_table(data);
+			});
+		}
+		async function crud_create(name, height, weight)
+		{
+			let formData = new FormData();
+			formData.append("op", "create");
+			formData.append("code", code);
+			formData.append("name", name);
+			formData.append("height", height);
+			formData.append("weight", weight);
+			
+			fetch(url, {
+				method: "POST",
+				body: formData
+			})
+			.then(response => response.json())
+			.then(function(){
+				crud_read();
+			});
+			
+			return false;
+		}
+
+		async function crud_update(id, name, height, weight)
+		{
+			let formData = new FormData();
+			formData.append("op", "update");
+			formData.append("code", code);
+			formData.append("id", id);
+			formData.append("name", name);
+			formData.append("height", height);
+			formData.append("weight", weight);
+			
+			fetch(url, {
+				method: "POST",
+				body: formData
+			})
+			.then(response => response.json())
+			.then(function(){
+				crud_read();
+			});
+			
+			return false;
+		}
+
+		async function crud_delete(id)
+		{
+			let formData = new FormData();
+			formData.append("op", "delete");
+			formData.append("code", code);
+			formData.append("id", id);
+			
+			fetch(url, {
+				method: "POST",
+				body: formData
+			})
+			.then(response => response.json())
+			.then(function(){
+				crud_read();
+			});
+			
+			return false;
+		}
+		
+		function escapeHtml(text) {
+			return text
+				.replace(/&/g, "&amp;")
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/"/g, "&quot;")
+				.replace(/'/g, "&#039;");
+		}		
+		function draw_table(data)
+		{
+			let filter		= document.getElementById("crud_filter").value.toLowerCase();
+		
+			let orderField	= document.getElementById("crud_order_field").value;
+			let order		= document.getElementById("crud_order").value;
+		
+			if(orderField == "name") {
+				data.list.sort((a, b) => a[orderField].localeCompare(b[orderField]) * (order == "asc" ? -1 : 1));
+			} else {
+				data.list.sort((a, b) => (Number(a[orderField]) - Number(b[orderField])) * (order == "asc" ? -1 : 1));
+			}
+		
+			height_max		= 0;
+			height_sum		= 0;
+		
+			str	= "<table>";
+			str	+= "<thead><tr><th>#</th><th>Név</th><th>Magasság</th><th>Tömeg</th><th></th></tr></thead>";
+			for(i = 0; i < data.list.length; i++) {
+				if(!data.list[i].name.toLowerCase().includes(filter) && !data.list[i].height.toLowerCase().includes(filter) && !data.list[i].weight.toLowerCase().includes(filter)) {
+					continue;
+				}
+				str	+= "<tr id=\"list_item_" + data.list[i].id + "\">";
+				str	+= "<td>#" + data.list[i].id + "</td>";
+				str	+= "<td class=\"col_name\">" + escapeHtml(data.list[i].name) + "</td>";
+				str	+= "<td class=\"col_height\">" + escapeHtml(data.list[i].height) + "</td>";
+				str	+= "<td class=\"col_weight\">" + escapeHtml(data.list[i].weight) + "</td>";
+				str	+= "<td><a class=\"list_item_delete\" data-id=\"" + data.list[i].id + "\" href=\"#\">Törlés</a> | <a class=\"list_item_edit\" data-id=\"" + data.list[i].id + "\" href=\"#\">Szerkeszt</a></td>";
+				str	+= "</tr>";
+				height_max	= Math.max(height_max, data.list[i].height);
+				height_sum	+= Number(data.list[i].height);
+			}
+			str += "</table>";
+			
+			str	+= "Összeg: " + height_sum + ", Átlag: " + (Math.round(height_sum / data.list.length * 10) / 10) + ", Legnagyobb: " + height_max;
+			
+			document.getElementById("crud_list").innerHTML	= str;
+			
+			elements	= document.getElementsByClassName("list_item_delete");
+			for (var i = 0; i < elements.length; i++) {
+				elements[i].addEventListener("click", function(e){
+					e.preventDefault();
+					crud_delete(this.getAttribute("data-id"));
+				});
+			}	
+			
+			elements	= document.getElementsByClassName("list_item_edit");
+			for (var i = 0; i < elements.length; i++) {
+				elements[i].addEventListener("click", function(e){
+					e.preventDefault();
+					id	= this.getAttribute("data-id");
+					
+					document.getElementById("create_form").classList.add("d-none");
+					document.getElementById("edit_form").classList.remove("d-none");
+					
+					document.getElementById("input_id_update").value = id;
+					document.getElementById("input_name_update").value = document.getElementById("list_item_" + id).getElementsByClassName("col_name")[0].innerText;
+					document.getElementById("input_height_update").value = document.getElementById("list_item_" + id).getElementsByClassName("col_height")[0].innerText;
+					document.getElementById("input_weight_update").value = document.getElementById("list_item_" + id).getElementsByClassName("col_weight")[0].innerText;
+				});
+			}	
+		}
+		
+		function getDataForId(id) {
+			found = false;
+			for(i = 0; i < last_data.length; i++) {
+				if(last_data[i].id == id) {
+				found = i;
+					continue;
+				}
+			}
+			if(!found) {
+				return false;
+			}
+			
+			document.getElementById("input_name_update").value = last_data.list[found].name;
+			document.getElementById("input_height_update").value = last_data.list[found].height;
+			document.getElementById("input_weight_update").value = last_data.list[found].weight;
+		}
+		
+		document.getElementById("create_form").addEventListener("submit", function(e) {
+			e.preventDefault();
+			let name	= document.getElementById("input_name").value;
+			let height	= document.getElementById("input_height").value;
+			let weight	= document.getElementById("input_weight").value;
+			
+			if(!name.length || name.length > 30 || !height.length || height.length > 30 || !weight.length || weight.length > 30) {
+				return false;
+			}
+			
+			crud_create(name, height, weight);
+			this.reset();
+			
+		});
+		
+		document.getElementById("edit_form").addEventListener("submit", function(e) {
+			e.preventDefault();
+			let id		= document.getElementById("input_id_update").value;
+			let name	= document.getElementById("input_name_update").value;
+			let height	= document.getElementById("input_height_update").value;
+			let weight	= document.getElementById("input_weight_update").value;
+			
+			if(!name.length || name.length > 30 || !height.length || height.length > 30 || !weight.length || weight.length > 30) {
+				return false;
+			}
+			
+			document.getElementById("create_form").classList.remove("d-none");
+			document.getElementById("edit_form").classList.add("d-none");
+			
+			crud_update(id, name, height, weight);
+		});
+		
+		document.getElementById("btn_edit_back").addEventListener("click", function(e) {
+			document.getElementById("create_form").classList.remove("d-none");
+			document.getElementById("edit_form").classList.add("d-none");
+		});
+		
+		document.getElementById("btn_edit_load").addEventListener("click", function(e) {
+			if(getDataForId(document.getElementById("input_id_update").value)) {
+				// innen folytatni
+			}
+		});
+		
+		document.getElementById("crud_filter").addEventListener("keyup", function(e) {
+			draw_table(last_data);
+		});
+		
+		document.getElementById("crud_order_field").addEventListener("change", function(e) {
+			draw_table(last_data);
+		});
+		
+		document.getElementById("crud_order").addEventListener("change", function(e) {
+			draw_table(last_data);
+		});
+		
+		window.onload = function() {
+			crud_read();
+		};
+	</script>
+	<style>
+		#crud_list > table {
+			border-collapse: collapse;
+			margin:10px;
+		}
+		
+		#crud_list > table td, #crud_list > table th {
+			border:1px solid black;
+			padding:10px;
+		}
+		
+		.d-none {
+			display:none;
+		}
+		</style>
+	</style>
+</body>
+</html>

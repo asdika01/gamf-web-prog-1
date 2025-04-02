@@ -30,12 +30,12 @@
 					Magasság: <input type="number" name="height" placeholder="Magasság" id="input_height" min="0" required>
 				</label>
 				<label>
-					Tömeg: <input type="number" name="weight" min="0" max="200" placeholder="Tömeg" id="input_weight" required>
+					Tömeg: <input type="number" name="weight" min="0" max="1000" placeholder="Tömeg" id="input_weight" required>
 				</label>
 				<button type="submit">Hozzáadás</button>
 			</form>
 			<form id="edit_form" class="d-none">
-				<input type="hidden" name="id" id="input_id_update">
+				<input type="hidden" name="id" id="input_index_update">
 				<label>
 					Név: <input type="text" name="name" placeholder="Név" minlength="5" id="input_name_update" required>
 				</label>
@@ -43,7 +43,7 @@
 					Magasság: <input type="number" name="height" placeholder="Magasság" id="input_height_update" min="0" required>
 				</label>
 				<label>
-					Tömeg: <input type="number" name="weight" placeholder="Tömeg" min="0" max="200" id="input_weight_update" required>
+					Tömeg: <input type="number" name="weight" placeholder="Tömeg" min="0" max="1000" id="input_weight_update" required>
 				</label>
 				<button type="submit">Szerkeszt</button>
 				<button type="button" id="btn_edit_back">Mégsem</button>
@@ -68,87 +68,38 @@
     </div>
     <footer>Készítők neptun kódja: NCCDTY, UXPEB6</footer>
 	<script>
-		code="NCCDTYbk77bn";
-		last_data	= {};
-		if (window.location.protocol === "https:") {
-			url="https://gamf-web1.asdika.dev/ajaxApi.php";
-		} else {
-			url="http://gamf.nhely.hu/ajax2/";
-		}
-		async function crud_read()
+		data		= [];
+		function crud_create(name, height, weight)
 		{
-			let formData = new FormData();
-			formData.append("op", "read");
-			formData.append("code", code);
-			
-			fetch(url, {
-				method: "POST",
-				body: formData
-			})
-			.then(response => response.json())
-			.then(function(data){
-				last_data	= data;
-				draw_table(data);
-			});
-		}
-		async function crud_create(name, height, weight)
-		{
-			let formData = new FormData();
-			formData.append("op", "create");
-			formData.append("code", code);
-			formData.append("name", name);
-			formData.append("height", height);
-			formData.append("weight", weight);
-			
-			fetch(url, {
-				method: "POST",
-				body: formData
-			})
-			.then(response => response.json())
-			.then(function(){
-				crud_read();
-			});
+			data[data.length]	=	{
+				id: data.length + 1,
+				name: name,
+				height: height,
+				weight: weight,
+			};
+			draw_table();
 			
 			return false;
 		}
 
-		async function crud_update(id, name, height, weight)
+		function crud_update(index, name, height, weight)
 		{
-			let formData = new FormData();
-			formData.append("op", "update");
-			formData.append("code", code);
-			formData.append("id", id);
-			formData.append("name", name);
-			formData.append("height", height);
-			formData.append("weight", weight);
+			data[index]	=	{
+				id: data[index].id,
+				name: name,
+				height: height,
+				weight: weight,
+			};
 			
-			fetch(url, {
-				method: "POST",
-				body: formData
-			})
-			.then(response => response.json())
-			.then(function(){
-				crud_read();
-			});
+			draw_table();
 			
 			return false;
 		}
 
-		async function crud_delete(id)
+		function crud_delete(index)
 		{
-			let formData = new FormData();
-			formData.append("op", "delete");
-			formData.append("code", code);
-			formData.append("id", id);
-			
-			fetch(url, {
-				method: "POST",
-				body: formData
-			})
-			.then(response => response.json())
-			.then(function(){
-				crud_read();
-			});
+			delete data[index];
+			draw_table();
 			
 			return false;
 		}
@@ -160,8 +111,9 @@
 				.replace(/>/g, "&gt;")
 				.replace(/"/g, "&quot;")
 				.replace(/'/g, "&#039;");
-		}		
-		function draw_table(data)
+		}
+		
+		function draw_table()
 		{
 			let filter		= document.getElementById("crud_filter").value.toLowerCase();
 		
@@ -169,23 +121,26 @@
 			let order		= document.getElementById("crud_order").value;
 		
 			if(orderField == "name") {
-				data.list.sort((a, b) => a[orderField].localeCompare(b[orderField]) * (order == "asc" ? -1 : 1));
+				data.sort((a, b) => a[orderField].localeCompare(b[orderField]) * (order == "asc" ? -1 : 1));
 			} else {
-				data.list.sort((a, b) => (Number(a[orderField]) - Number(b[orderField])) * (order == "asc" ? -1 : 1));
+				data.sort((a, b) => (Number(a[orderField]) - Number(b[orderField])) * (order == "asc" ? -1 : 1));
 			}
 		
 			str	= "<table>";
 			str	+= "<thead><tr><th>#</th><th>Név</th><th>Magasság</th><th>Tömeg</th><th></th></tr></thead>";
-			for(i = 0; i < data.list.length; i++) {
-				if(!data.list[i].name.toLowerCase().includes(filter) && !data.list[i].height.toLowerCase().includes(filter) && !data.list[i].weight.toLowerCase().includes(filter)) {
+			for(i = 0; i < data.length; i++) {
+				if(typeof data[i] == "undefined") { // törölt sor
 					continue;
 				}
-				str	+= "<tr id=\"list_item_" + data.list[i].id + "\">";
-				str	+= "<td>#" + data.list[i].id + "</td>";
-				str	+= "<td class=\"col_name\">" + escapeHtml(data.list[i].name) + "</td>";
-				str	+= "<td class=\"col_height\">" + escapeHtml(data.list[i].height) + "</td>";
-				str	+= "<td class=\"col_weight\">" + escapeHtml(data.list[i].weight) + "</td>";
-				str	+= "<td><a class=\"list_item_delete\" data-id=\"" + data.list[i].id + "\" href=\"#\">Törlés</a> | <a class=\"list_item_edit\" data-id=\"" + data.list[i].id + "\" href=\"#\">Szerkeszt</a></td>";
+				if(!data[i].name.toLowerCase().includes(filter) && !data[i].height.toLowerCase().includes(filter) && !data[i].weight.toLowerCase().includes(filter)) {
+					continue;
+				}
+				str	+= "<tr id=\"list_item_" + i + "\">";
+				str	+= "<td>#" + (data[i].id) + "</td>";
+				str	+= "<td class=\"col_name\">" + escapeHtml(data[i].name) + "</td>";
+				str	+= "<td class=\"col_height\">" + escapeHtml(data[i].height) + "</td>";
+				str	+= "<td class=\"col_weight\">" + escapeHtml(data[i].weight) + "</td>";
+				str	+= "<td><a class=\"list_item_delete\" data-index=\"" + i + "\" href=\"#\">Törlés</a> | <a class=\"list_item_edit\" data-index=\"" + i + "\" href=\"#\">Szerkeszt</a></td>";
 				str	+= "</tr>";
 			}
 			str += "</table>";
@@ -195,7 +150,7 @@
 			for (var i = 0; i < elements.length; i++) {
 				elements[i].addEventListener("click", function(e){
 					e.preventDefault();
-					crud_delete(this.getAttribute("data-id"));
+					crud_delete(this.getAttribute("data-index"));
 				});
 			}	
 			
@@ -203,15 +158,15 @@
 			for (var i = 0; i < elements.length; i++) {
 				elements[i].addEventListener("click", function(e){
 					e.preventDefault();
-					id	= this.getAttribute("data-id");
+					index	= this.getAttribute("data-index");
 					
 					document.getElementById("create_form").classList.add("d-none");
 					document.getElementById("edit_form").classList.remove("d-none");
 					
-					document.getElementById("input_id_update").value = id;
-					document.getElementById("input_name_update").value = document.getElementById("list_item_" + id).getElementsByClassName("col_name")[0].innerText;
-					document.getElementById("input_height_update").value = document.getElementById("list_item_" + id).getElementsByClassName("col_height")[0].innerText;
-					document.getElementById("input_weight_update").value = document.getElementById("list_item_" + id).getElementsByClassName("col_weight")[0].innerText;
+					document.getElementById("input_index_update").value = index;
+					document.getElementById("input_name_update").value = data[index].name;
+					document.getElementById("input_height_update").value = data[index].height;
+					document.getElementById("input_weight_update").value = data[index].weight;
 				});
 			}	
 		}
@@ -229,7 +184,7 @@
 		
 		document.getElementById("edit_form").addEventListener("submit", function(e) {
 			e.preventDefault();
-			let id		= document.getElementById("input_id_update").value;
+			let index		= document.getElementById("input_index_update").value;
 			let name	= document.getElementById("input_name_update").value;
 			let height	= document.getElementById("input_height_update").value;
 			let weight	= document.getElementById("input_weight_update").value;
@@ -237,7 +192,7 @@
 			document.getElementById("create_form").classList.remove("d-none");
 			document.getElementById("edit_form").classList.add("d-none");
 			
-			crud_update(id, name, height, weight);
+			crud_update(index, name, height, weight);
 		});
 		
 		document.getElementById("btn_edit_back").addEventListener("click", function(e) {
@@ -246,20 +201,19 @@
 		});
 		
 		document.getElementById("crud_filter").addEventListener("keyup", function(e) {
-			draw_table(last_data);
+			draw_table();
 		});
 		
 		document.getElementById("crud_order_field").addEventListener("change", function(e) {
-			draw_table(last_data);
+			draw_table();
 		});
 		
 		document.getElementById("crud_order").addEventListener("change", function(e) {
-			draw_table(last_data);
+			draw_table();
 		});
-		
-		window.onload = function() {
-			crud_read();
-		};
+	//	crud_create("dssdfdsf", "123", "123");
+	//	crud_create("nfghnfgh", "321", "321");
+	//	crud_create("gbfsgbfg", "33", "33");
 	</script>
 	<style>
 		#crud_list > table {
