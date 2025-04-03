@@ -1,74 +1,98 @@
 <!DOCTYPE html>
-<html lang="hu">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Táblázat és Diagram</title>
-    <!--<link rel="stylesheet" href="styles.css"-->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style> table {
-        border-collapse: collapse;
-        margin: 20px;
-    }
-    
-    th, td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: center;
-    }
-    
-    th {
-        background-color: #f4f4f4;
-        font-weight: bold;
-    }
-    
-    tbody td {
-        cursor: pointer;
-    }
-    
-    tbody tr.selected {
-        background-color: #e6f3ff;
-    }
-    
-    #chartContainer {
-        width: 80%;
-        margin: 20px auto;
-    }
-    </style>
+    <meta charset="utf-8">
+    <title>Web-programozás-1 - CRUD</title>
+    <link type="text/css" rel="stylesheet" href="style.css">
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <table id="dataTable">
-        <thead>
-            <tr>
-                <th>Oszlop 1</th>
-                <th>Oszlop 2</th>
-                <th>Oszlop 3</th>
-                <th>Oszlop 4</th>
-                <th>Oszlop 5</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>0</td><td>20</td><td>40</td><td>20</td><td>0</td>
-            </tr>
-            <tr>
-                <td>10</td><td>60</td><td>10</td><td>50</td><td>20</td>
-            </tr>
-            <tr>
-                <td>31</td><td>52</td><td>73</td><td>94</td><td>15</td>
-            </tr>
-            <tr>
-                <td>44</td><td>55</td><td>66</td><td>77</td><td>88</td>
-            </tr>
-            <tr>
-                <td>10</td><td>20</td><td>30</td><td>40</td><td>50</td>
-            </tr>
-        </tbody>
-    </table>
+    <header>
+        <h1 class="header">Web-programozás-1 Elméleti Házi feladat</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="crud.html">Táblázat</a></li>
+            <li><a href="html5.html">HTML5</a></li>
+            <li><a href="chartjs.html" class="active">ChartJS</a></li>
+            <li><a href="ajax.html">AJAX</a></li>
+        </ul>
+    </nav>
+    <aside>
+        <h1>Introduction</h1>
+    </aside>
+    <div class="content">
+        <h1>ChartJS</h1>
+        <article>
+			<table id="dataTable">
+				<thead>
+					<tr>
+						<th>Oszlop 1</th>
+						<th>Oszlop 2</th>
+						<th>Oszlop 3</th>
+						<th>Oszlop 4</th>
+						<th>Oszlop 5</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>0</td><td>20</td><td>40</td><td>20</td><td>0</td>
+					</tr>
+					<tr>
+						<td>10</td><td>60</td><td>10</td><td>50</td><td>20</td>
+					</tr>
+					<tr>
+						<td>31</td><td>52</td><td>73</td><td>94</td><td>15</td>
+					</tr>
+					<tr>
+						<td>44</td><td>55</td><td>66</td><td>77</td><td>88</td>
+					</tr>
+					<tr>
+						<td>10</td><td>20</td><td>30</td><td>40</td><td>50</td>
+					</tr>
+				</tbody>
+			</table>
 
-    <div id="chartContainer">
-        <canvas id="myChart"></canvas>
+			<div id="chartContainer">
+				<canvas id="myChart"></canvas>
+			</div>
+
+        </article>
     </div>
+    <footer>Készítők neptun kódja: NCCDTY, UXPEB6</footer>
+	
+    <style>
+		table {
+			border-collapse: collapse;
+			margin: 20px;
+		}
+		
+		th, td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			text-align: center;
+		}
+		
+		th {
+			background-color: #f4f4f4;
+			font-weight: bold;
+		}
+		
+		tbody td {
+			cursor: pointer;
+		}
+		
+		tbody tr.selected {
+			background-color: #e6f3ff;
+		}
+		
+		#chartContainer {
+			width: 80%;
+			margin: 20px auto;
+		}
+    </style>
 
-    <script src="chart.js"></script>
+	<script src="chart.js"></script>
 </body>
 </html>
