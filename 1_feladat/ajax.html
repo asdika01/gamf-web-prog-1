@@ -222,8 +222,7 @@
 					e.preventDefault();
 					id	= this.getAttribute("data-id");
 					
-					document.getElementById("create_form").classList.add("d-none");
-					document.getElementById("edit_form").classList.remove("d-none");
+					document.getElementById("edit_form_inputs").classList.remove("d-none");
 					
 					document.getElementById("input_id_update").value = id;
 					document.getElementById("input_name_update").value = document.getElementById("list_item_" + id).getElementsByClassName("col_name")[0].innerText;
@@ -235,19 +234,19 @@
 		
 		function getDataForId(id) {
 			found = false;
-			for(i = 0; i < last_data.length; i++) {
-				if(last_data[i].id == id) {
-				found = i;
-					continue;
+			for(i = 0; i < last_data.list.length; i++) {
+				console.log(last_data.list[i].id == id, last_data.list[i].id, id);
+				if(last_data.list[i].id == id) {
+					found = i;
+					break;
 				}
 			}
-			if(!found) {
+			
+			if(found === false) {
 				return false;
 			}
 			
-			document.getElementById("input_name_update").value = last_data.list[found].name;
-			document.getElementById("input_height_update").value = last_data.list[found].height;
-			document.getElementById("input_weight_update").value = last_data.list[found].weight;
+			return last_data.list[found];
 		}
 		
 		document.getElementById("create_form").addEventListener("submit", function(e) {
@@ -276,8 +275,8 @@
 				return false;
 			}
 			
-			document.getElementById("create_form").classList.remove("d-none");
-			document.getElementById("edit_form").classList.add("d-none");
+			document.getElementById("edit_form_inputs").classList.add("d-none");
+			document.getElementById("input_id_update").value	= "";
 			
 			crud_update(id, name, height, weight);
 		});
@@ -288,8 +287,12 @@
 		});
 		
 		document.getElementById("btn_edit_load").addEventListener("click", function(e) {
-			if(getDataForId(document.getElementById("input_id_update").value)) {
-				// innen folytatni
+			if(data = getDataForId(document.getElementById("input_id_update").value)) {
+				document.getElementById("edit_form_inputs").classList.remove("d-none");
+				document.getElementById("input_name_update").value = data.name;
+				document.getElementById("input_height_update").value = data.height;
+				document.getElementById("input_weight_update").value = data.weight;
+
 			}
 		});
 		
