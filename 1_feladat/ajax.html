@@ -22,6 +22,7 @@
     <div class="content">
         <h1>Crud functionality</h1>
         <article>
+			<div id="success_msg"></div>
 			<form id="create_form">
 				<label>
 					Név: <input type="text" name="name" placeholder="Név" id="input_name">
@@ -114,7 +115,10 @@
 				body: formData
 			})
 			.then(response => response.json())
-			.then(function(){
+			.then(function(v){
+				if(v == "1") {
+					successMessage("A sor sikeresen létrehozva.");
+				}
 				crud_read();
 			});
 			
@@ -131,16 +135,21 @@
 			formData.append("height", height);
 			formData.append("weight", weight);
 			
+			affected_rows	= 0;
+			
 			fetch(url, {
 				method: "POST",
 				body: formData
 			})
-			.then(response => response.json())
-			.then(function(){
+			.then(response => response.text())
+			.then(function(v){
+				if(v == "1") {
+					successMessage("A sor sikeresen szerkesztve.");
+				}
 				crud_read();
 			});
 			
-			return false;
+			return affected_rows;
 		}
 
 		async function crud_delete(id)
@@ -155,7 +164,10 @@
 				body: formData
 			})
 			.then(response => response.json())
-			.then(function(){
+			.then(function(v){
+				if(v == "1") {
+					successMessage("A sor sikeresen törölve.");
+				}
 				crud_read();
 			});
 			
@@ -249,6 +261,15 @@
 			return last_data.list[found];
 		}
 		
+		function successMessage(msg)
+		{
+			//success_msg
+			document.getElementById("success_msg").innerText	= msg;
+			setTimeout(function(){
+				document.getElementById("success_msg").innerText	= "";
+			}, 3000);
+		}
+		
 		document.getElementById("create_form").addEventListener("submit", function(e) {
 			e.preventDefault();
 			let name	= document.getElementById("input_name").value;
@@ -279,6 +300,7 @@
 			document.getElementById("input_id_update").value	= "";
 			
 			crud_update(id, name, height, weight);
+
 		});
 		
 		document.getElementById("btn_edit_back").addEventListener("click", function(e) {
@@ -325,6 +347,12 @@
 		
 		.d-none {
 			display:none;
+		}
+		
+		#success_msg {
+			font-weight:bold;
+			color:#00cc00;
+			height:20px;
 		}
 		</style>
 	</style>
