@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Web-programozás-1 - HTML5</title>
+    <link type="text/css" rel="stylesheet" href="style.css">
+	<script src="./jquery-3.7.1.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1 class="header">Web-programozás-1 Elméleti Házi feladat</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="crud.html">Táblázat</a></li>
+            <li><a href="html5.html" class="active">HTML5</a></li>
+            <li><a href="chartjs.html">ChartJS</a></li>
+            <li><a href="ajax.html">AJAX</a></li>
+            <li><a href="oojs.html">OOJS</a></li>
+        </ul>
+    </nav>
+    <aside>
+        <h1>HTML5</h1>
+    </aside>
+    <div class="content">
+        <article>
+			<h2>Web Storage</h2>
+			<p>A Web Storage lehetővé teszi, hogy a webalkalmazások adatokat tároljanak a felhasználó böngészőjében kulcs-érték párok formájában, akár tartósan, akár ideiglenesen.</p>
+			<p>
+				Próbaképp írj be ide valamilyen szöveget, majd frissítsd az oldalt:
+				<input type="text" id="web-storage-input">
+			</p>
+			<p>
+				Frissítés után láthatod, hogy a beírt adat megmaradt, mert a háttérben futó script elmentette és visszatöltötte azt – ezzel áthidalva az oldalfrissítés okozta adatvesztést.
+			</p>
+        </article>
+        <article>
+			<h2>Web Workers</h2>
+			<p>A Web Worker lehetővé teszi, hogy a webalkalmazás számításigényes feladatokat külön szálon végezzen el, így a fő szál – és vele a felhasználói felület – nem akad meg.</p>
+			<form id="web-worker-form">
+				Ennyi prím számig keressen: <input type="number" name="n" value="300000" id="web-worker-input">
+				<button type="submit">Web worker indítása</button>
+			</form>
+			<div id="web-worker-result"></div>
+			<div id="web-worker-result2"></div>
+        </article>
+        <article>
+			<h2>Server-Sent Events</h2>
+			<p>
+				A Server-Sent Events (SSE) egy olyan technológia, amely lehetővé teszi, hogy a szerver folyamatosan,
+				valós időben küldjön adatokat a kliens (böngésző) felé egy tartós,
+				egyirányú HTTP-kapcsolaton keresztül. Ez különösen hasznos például élő frissítésekhez,
+				értesítésekhez vagy folyamatos adatfolyamok kezeléséhez anélkül,
+				hogy a kliensnek ismételten kérnie kellene az új adatokat.
+			</p>
+        </article>
+        <article>
+			Server-Sent Events, Geolocation API
+        </article>
+        <article>
+			Drag and drop
+        </article>
+        <article>
+			Canvas
+        </article>
+        <article>
+			SVG
+        </article>
+    </div>
+    <footer>Készítők neptun kódja: NCCDTY, UXPEB6</footer>
+	
+    <style>
+		article {
+			border-bottom:1px solid #bbb;
+		}
+    </style>
+	<script>
+		$(function(){
+		
+			// web storage
+			if(localStorage.getItem("web-storage")) {
+				$("#web-storage-input").val(localStorage.getItem("web-storage"));
+			}
+			
+			$("#web-storage-input").on("keyup", function(){
+				localStorage.setItem("web-storage", $(this).val());
+			});
+			
+			//web worker
+			const workerCode = () => {
+				function isPrime(n) {
+					for (let i = 2; i <= Math.sqrt(n); i++) {
+						if (n % i === 0) return false;
+					}
+					return n > 1;
+				}
+
+				function findPrimes(limit) {
+					const primes = [];
+					let num = 2;
+					while (primes.length < limit) {
+						if (isPrime(num)) primes.push(num);
+						num++;
+					}
+					return primes;
+				}
+
+				onmessage = function(e) {
+					const count = e.data;
+					const primes = findPrimes(count);
+					postMessage(primes);
+				};
+			};
+
+			const blob = new Blob(["(" + workerCode.toString() + ")()"], { type: "text/javascript" });
+			const worker = new Worker(URL.createObjectURL(blob));
+
+			worker.onmessage = function(e) {
+				$("#web-worker-result").text("Elkészült " + e.data.length + " prímszám!");
+
+				$.each(e.data, function(key, val){
+					$("#web-worker-result2").append((key == 0 ? "" : ", ") + val);
+				});
+				clearTimeout(timer);
+			};
+
+			timer = 0;
+
+			$("#web-worker-form").on("submit", function(e){
+				e.preventDefault();
+				worker.postMessage($("#web-worker-input").val());
+				elapsedTime = 0;
+				timer = setInterval(function(){
+					elapsedTime += 0.1;
+					$("#web-worker-result").text("Amíg a háttérben fut a worker, ennyi idő telt el: " + (Math.round(elapsedTime * 10) / 10) + "mp");
+				}, 100);
+			});
+		});
+	</script>
+	
+	<style>
+		#web-worker-result2 {
+			max-height:300px;
+			overflow:auto;
+		}
+	</style>
+	
+</body>
+</html>

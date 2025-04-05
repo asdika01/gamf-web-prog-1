@@ -1,10 +1,52 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<style>
+			body {
+				background:#aaa;
+			}
+		
+			#buttons {
+				width:90vw;
+				height:90vh;
+				margin-left:auto;
+				margin-right:auto;
+				margin-top:5vh;
+			}
+			
+			#buttons a {
+				height:45vh;
+				font-size:40px;
+				text-align:center;
+				line-height:45vh;
+				background:rgba(0,0,0,0.4);
+				display:block;
+				color:#fff !IMPORTANT;
+			}
+			
+			#buttons a:first-child {
+				border-top-left-radius: 30px;
+				border-top-right-radius: 30px;
+			}
+			
+			#buttons a:last-child {
+				border-bottom-left-radius: 30px;
+				border-bottom-right-radius: 30px;
+			}
+			
+			#buttons a:first-child:hover {
+				background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 100%);
+			}
+			
+			#buttons a:last-child:hover {
+				background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 100%);
+			}
+		</style>
 	</head>
 	<body>
-		<h2>
-			<a href="./1_feladat/">1. feladat</a>
-		</h2>
+		<div id="buttons">
+			<a href="./1_feladat/index.html">1. feladat</a>
+			<a href="./react/react.html">2. feladat (react)</a>
+		</div>
 	</body>
 </html>
