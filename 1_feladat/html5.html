@@ -54,6 +54,7 @@
 				értesítésekhez vagy folyamatos adatfolyamok kezeléséhez anélkül,
 				hogy a kliensnek ismételten kérnie kellene az új adatokat.
 			</p>
+			<p>Ebben a példában másodpercenként frissülve láthatod a szerver idejét: <span id="sse_output"></span></p>
         </article>
         <article>
 			Server-Sent Events, Geolocation API
@@ -136,6 +137,12 @@
 					$("#web-worker-result").text("Amíg a háttérben fut a worker, ennyi idő telt el: " + (Math.round(elapsedTime * 10) / 10) + "mp");
 				}, 100);
 			});
+			
+			//SSE
+			const source = new EventSource("https://gamf-web1.asdika.dev/1_feladat/sse.php");
+			source.onmessage = function(event) {
+				$("#sse_output").text(event.data);
+			};
 		});
 	</script>
 	
