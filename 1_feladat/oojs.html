@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Web-programozás-1 - OOJS</title>
+    <link type="text/css" rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1 class="header">Web-programozás-1 Elméleti Házi feladat</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="crud.html">Táblázat</a></li>
+            <li><a href="html5.html">HTML5</a></li>
+            <li><a href="chartjs.html">ChartJS</a></li>
+            <li><a href="ajax.html">AJAX</a></li>
+            <li><a href="oojs.html" class="active">OOJS</a></li>
+        </ul>
+    </nav>
+    <aside>
+        <h1>OOJS</h1>
+    </aside>
+    <div class="content">
+        <article>
+			<h2>Reakció játék</h2>
+			<p>Pontszám: <span id="score">0</span></p>
+			<button id="start">Játék indítása</button>
+			<div id="game-area"></div>
+        </article>
+    </div>
+    <footer>Készítők neptun kódja: NCCDTY, UXPEB6</footer>
+	
+    <style>
+		#game-area {
+					width: 400px;
+            height: 300px;
+            border: 2px solid #444;
+            margin: 0 auto;
+            position: relative;
+            background: #f9f9f9;
+        }
+
+        .target {
+            width: 40px;
+            height: 40px;
+            background: red;
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+        }
+    </style>
+ <script>
+        // Alap osztály: elem kezelése
+        class GameElement {
+            constructor(x, y) {
+                this.element = document.createElement("div");
+                this.element.style.left = x + "px";
+                this.element.style.top = y + "px";
+            }
+
+            appendTo(parent) {
+                parent.appendChild(this.element);
+            }
+
+            remove() {
+                this.element.remove();
+            }
+        }
+
+        // Célpont osztály
+        class Target extends GameElement {
+            constructor(x, y) {
+                super(x, y);
+                this.element.className = "target";
+            }
+
+            onClick(callback) {
+                this.element.addEventListener("click", () => callback());
+            }
+        }
+
+        // Játék logika
+        class Game {
+            constructor(container) {
+                this.container = container;
+                this.score = 0;
+                this.scoreDisplay = document.getElementById("score");
+                this.activeTarget = null;
+            }
+
+            start() {
+				clearTimeout(this.timer);
+                this.score = 0;
+                this.updateScore();
+                this.spawnNext();
+            }
+
+            updateScore() {
+                this.scoreDisplay.textContent = this.score;
+            }
+
+			spawnNext() {
+				// Töröljük az előző időzítőt, ha van
+				if (this.timer) {
+					clearTimeout(this.timer);
+					this.timer = null;
+				}
+
+				// Előző célpont eltávolítása
+				if (this.activeTarget) this.activeTarget.remove();
+
+				const x = Math.random() * (this.container.clientWidth - 40);
+				const y = Math.random() * (this.container.clientHeight - 40);
+				const target = new Target(x, y);
+
+				target.onClick(() => {
+					this.score++;
+					this.updateScore();
+					this.spawnNext(); // új célpont azonnal
+				});
+
+				target.appendTo(this.container);
+				this.activeTarget = target;
+
+				// Következő célpont késleltetve
+				const delay = Math.random() * 500 + 500;
+				this.timer = setTimeout(() => this.spawnNext(), delay);
+			}
+        }
+
+        // Inicializálás
+        const game = new Game(document.getElementById("game-area"));
+
+        document.getElementById("start").addEventListener("click", () => {
+            game.start();
+        });
+    </script>
+</body>
+</html>
