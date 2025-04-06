@@ -57,17 +57,51 @@
 			<p>Ebben a példában másodpercenként frissülve láthatod a szerver idejét: <span id="sse_output"></span></p>
         </article>
         <article>
-			Server-Sent Events, Geolocation API
+			<h2>Geolocation API</h2>
+			<p>
+				A Geolocation API lehetővé teszi, hogy a webalkalmazás lekérje a felhasználó aktuális földrajzi pozícióját
+				(szélességi és hosszúsági koordinátákat) a böngészőn keresztül.
+				Az API a felhasználó engedélyét kéri, és GPS, Wi-Fi vagy IP-alapú helymeghatározást használ.
+			</p>
+			<button id="geolocation-btn">Helyadatok betöltése</button>
+			<p id="geolocation-result"></p>
         </article>
         <article>
-			Drag and drop
+			<h2>Drag and drop</h2>
+			<p>
+				A Drag and Drop API lehetővé teszi, hogy az elemeket áthúzzuk az oldalon belül vagy fájlokat dobjunk egy elemre,
+				amit a JavaScript feldolgozhat. Fájlfeltöltésnél használható arra, hogy a felhasználó egyszerűen „bedobjon” egy vagy több fájlt egy célterületre.
+			</p>
+			<div id="dragAndDrop-zone">Ide húzhatod a fájlt</div>
+			<div id="dragAndDrop-output"></div>
         </article>
         <article>
-			Canvas
+			<h2>Canvas</h2>
+			<p>
+				A Canvas API egy HTML5 rajzfelület, amely lehetővé teszi, hogy JavaScript segítségével grafikát rajzoljunk a böngészőben,
+				például vonalakat, formákat, képeket vagy akár animációkat. Ideális játékokhoz, vizualizációkhoz és dinamikus grafikus megjelenítéshez.
+			</p>
+			<canvas id="canvas-output" width="300" height="200" style="border:1px solid #ccc;"></canvas>
         </article>
         <article>
-			SVG
-        </article>
+			<h2>SVG</h2>
+			<p>
+				Az SVG (Scalable Vector Graphics) egy XML-alapú nyelv, amely lehetővé teszi vektorgrafika (például körök, vonalak, alakzatok, szövegek)
+				megjelenítését a weben. A HTML-be beágyazható, stílusozható CSS-sel, és akár JavaScript-tel is vezérelhető, interaktívvá tehető.
+			</p>
+			<p>Ez a példa egy narancssárga kör, egy kék téglalap és egy szöveg megjelenítését mutatja:</p>
+			<svg width="300" height="200">
+				<!-- Kör -->
+				<circle cx="60" cy="60" r="40" fill="orange" id="svg-circle" />
+
+				<!-- Téglalap -->
+				<rect x="130" y="30" width="100" height="60" fill="steelblue" />
+
+				<!-- Szöveg -->
+				<text x="80" y="150" font-size="16" fill="black">SVG példa</text>
+			</svg>
+			<p>Az SVG közvetlenül a DOM része, így könnyen animálható, eseményekkel bővíthető, vagy CSS-sel stílusozható.</p>
+		</article>
     </div>
     <footer>Készítők neptun kódja: NCCDTY, UXPEB6</footer>
 	
@@ -143,6 +177,86 @@
 			source.onmessage = function(event) {
 				$("#sse_output").text(event.data);
 			};
+			
+			//Geolocation
+			$("#geolocation-btn").on("click", function(){
+				if (navigator.geolocation) {
+					navigator.geolocation.getCurrentPosition(function(pos) {
+						$("#geolocation-result").text("Szélesség: " + pos.coords.latitude.toFixed(5) + ", Hosszúság: " + pos.coords.longitude.toFixed(5));
+						$("#geolocation-result").append(" | <a href=\"https://www.google.com/maps?q=" + pos.coords.latitude + "," + pos.coords.longitude + "\" target=\"_blank\">Megtekintés Google Maps-en</a>");
+					}, function(error) {
+						$("#geolocation-result").text("Helymeghatározás sikertelen.");
+					});
+				} else {
+					$("#geolocation-result").text("A böngésző nem támogatja a Geolocation API-t.");
+				}
+			});
+			
+			//Drag and Drop
+			const $zone = $('#dragAndDrop-zone');
+			const $output = $('#dragAndDrop-output');
+
+			$zone.on('dragover', function (e) {
+				e.preventDefault();
+				$zone.addClass("dragover");
+			}).on('dragleave', function () {
+				$zone.removeClass("dragover");
+			});
+
+			$zone.on('drop', function (e) {
+				e.preventDefault();
+				$zone.removeClass("dragover");
+
+				const files = e.originalEvent.dataTransfer.files;
+				if (!files.length) {
+					$output.text('Nem érkezett fájl.');
+					return;
+				}
+
+				let result = "<ul>";
+				$.each(files, function (i, file) {
+					const fullName = file.name;
+					const lastDot = fullName.lastIndexOf('.');
+					const nameOnly = lastDot !== -1 ? fullName.substring(0, lastDot) : fullName;
+					const extension = lastDot !== -1 ? fullName.substring(lastDot + 1) : 'nincs';
+					const sizeKB = (file.size / 1024).toFixed(2);
+
+					result += "<li>Fájlnév: " + nameOnly + ", Kiterjesztés: " + extension + ", Méret: " + sizeKB + " KB</li>";
+				});
+				result += "</ul>";
+				$output.html(result);
+			});			
+			
+			//Canvas
+			const canvas = document.getElementById("canvas-output");
+			const ctx = canvas.getContext("2d");
+
+			// Téglalap
+			ctx.fillStyle = "#4CAF50";
+			ctx.fillRect(20, 20, 100, 60);
+
+			// Kör
+			ctx.beginPath();
+			ctx.arc(180, 60, 30, 0, 2 * Math.PI);
+			ctx.fillStyle = "#2196F3";
+			ctx.fill();
+
+			// Szöveg
+			ctx.fillStyle = "#000";
+			ctx.font = "16px Arial";
+			ctx.fillText("Canvas példa", 90, 150);
+			
+			
+			//SVG
+			const circle = document.getElementById("svg-circle");
+			let growing = true;
+			let radius = 40;
+
+			setInterval(() => {
+				radius += growing ? 1 : -1;
+				if (radius >= 60 || radius <= 30) growing = !growing;
+				circle.setAttribute("r", radius);
+			}, 30);
 		});
 	</script>
 	
@@ -151,6 +265,29 @@
 			max-height:300px;
 			overflow:auto;
 		}
+
+		#dragAndDrop-zone {
+			width: 100%;
+			max-width: 300px;
+			height: 150px;
+			border: 2px dashed #666;
+			border-radius: 10px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: #555;
+			margin-top: 20px;
+			margin-bottom: 20px;
+			line-height:150px;
+			font-size:20px;
+			transition: all 200ms linear;
+		}
+		
+		#dragAndDrop-zone.dragover {
+			background: #eef;
+			font-size:30px;
+		}
+
 	</style>
 	
 </body>
