@@ -35,6 +35,9 @@
 				<label>
 					Tömeg: <input type="number" name="weight" min="0" max="1000" placeholder="Tömeg" id="input_weight" required>
 				</label>
+				<label>
+					Életkor: <input type="number" name="age" min="0" placeholder="Életkor" id="input_age" required>
+				</label>
 				<button type="submit">Hozzáadás</button>
 			</form>
 			<form id="edit_form" class="d-none">
@@ -47,6 +50,9 @@
 				</label>
 				<label>
 					Tömeg: <input type="number" name="weight" placeholder="Tömeg" min="0" max="1000" id="input_weight_update" required>
+				</label>
+				<label>
+					Életkor: <input type="number" name="age" min="0" placeholder="Életkor" id="input_age_update" required>
 				</label>
 				<button type="submit">Szerkeszt</button>
 				<button type="button" id="btn_edit_back">Mégsem</button>
@@ -61,6 +67,7 @@
 				<option value="name">Név</option>
 				<option value="height">Magasság</option>
 				<option value="weight">Tömeg</option>
+				<option value="age">Életkor</option>
 			</select>
 			<select id="crud_order">
 				<option value="asc">Csökkenő</option>
@@ -71,21 +78,23 @@
     </div>
     <footer>Készítők neptun kódja: NCCDTY, UXPEB6</footer>
 	<script>
-		// Előre feltöltött adatok
+		// Előre feltöltött adatok az új oszloppal (Életkor)
 		let data = [
-			{ id: 1, name: "Bálint", height: "177", weight: "75" },
-			{ id: 2, name: "Csaba", height: "178", weight: "90" },
-			{ id: 3, name: "Elemér", height: "218", weight: "120" }
+			{ id: 1, name: "Bálint", height: "177", weight: "75", age: "35" },
+			{ id: 2, name: "Csaba", height: "178", weight: "90", age: "38" },
+			{ id: 3, name: "Elemér", height: "218", weight: "120", age: "1000" }
 		];
+		
 		// Következő id érték
 		let nextId = 4;
 
-		function crud_create(name, height, weight) {
+		function crud_create(name, height, weight, age) {
 			data.push({
 				id: nextId,
 				name: name,
 				height: height,
-				weight: weight
+				weight: weight,
+				age: age
 			});
 			nextId++;
 			draw_table();
@@ -93,12 +102,13 @@
 			return false;
 		}
 
-		function crud_update(index, name, height, weight) {
+		function crud_update(index, name, height, weight, age) {
 			data[index] = {
 				id: data[index].id,
 				name: name,
 				height: height,
 				weight: weight,
+				age: age
 			};
 			
 			draw_table();
@@ -135,12 +145,16 @@
 			}
 		
 			let str = "<table>";
-			str += "<thead><tr><th>#</th><th>Név</th><th>Magasság</th><th>Tömeg</th><th></th></tr></thead>";
+			str += "<thead><tr><th>#</th><th>Név</th><th>Magasság</th><th>Tömeg</th><th>Életkor</th><th></th></tr></thead>";
 			for(let i = 0; i < data.length; i++) {
 				if(typeof data[i] == "undefined") { // törölt sor
 					continue;
 				}
-				if(!data[i].name.toLowerCase().includes(filter) && !data[i].height.toLowerCase().includes(filter) && !data[i].weight.toLowerCase().includes(filter)) {
+				// Filter ellenőrzése az új "age" mezőre is
+				if(!data[i].name.toLowerCase().includes(filter) && 
+				   !data[i].height.toLowerCase().includes(filter) && 
+				   !data[i].weight.toLowerCase().includes(filter) &&
+				   !data[i].age.toLowerCase().includes(filter)) {
 					continue;
 				}
 				str += "<tr id=\"list_item_" + i + "\">";
@@ -148,6 +162,7 @@
 				str += "<td class=\"col_name\">" + escapeHtml(data[i].name) + "</td>";
 				str += "<td class=\"col_height\">" + escapeHtml(data[i].height) + "</td>";
 				str += "<td class=\"col_weight\">" + escapeHtml(data[i].weight) + "</td>";
+				str += "<td class=\"col_age\">" + escapeHtml(data[i].age) + "</td>";
 				str += "<td><a class=\"list_item_delete\" data-index=\"" + i + "\" href=\"#\">Törlés</a> | <a class=\"list_item_edit\" data-index=\"" + i + "\" href=\"#\">Szerkeszt</a></td>";
 				str += "</tr>";
 			}
@@ -175,31 +190,36 @@
 					document.getElementById("input_name_update").value = data[index].name;
 					document.getElementById("input_height_update").value = data[index].height;
 					document.getElementById("input_weight_update").value = data[index].weight;
+					document.getElementById("input_age_update").value = data[index].age;
 				});
 			}	
 		}
 		
+		// Új elem hozzáadásakor
 		document.getElementById("create_form").addEventListener("submit", function(e) {
 			e.preventDefault();
 			let name = document.getElementById("input_name").value;
 			let height = document.getElementById("input_height").value;
 			let weight = document.getElementById("input_weight").value;
+			let age = document.getElementById("input_age").value;
 			
-			crud_create(name, height, weight);
+			crud_create(name, height, weight, age);
 			this.reset();
 		});
 		
+		// Elem szerkesztése
 		document.getElementById("edit_form").addEventListener("submit", function(e) {
 			e.preventDefault();
 			let index = document.getElementById("input_index_update").value;
 			let name = document.getElementById("input_name_update").value;
 			let height = document.getElementById("input_height_update").value;
 			let weight = document.getElementById("input_weight_update").value;
+			let age = document.getElementById("input_age_update").value;
 			
 			document.getElementById("create_form").classList.remove("d-none");
 			document.getElementById("edit_form").classList.add("d-none");
 			
-			crud_update(index, name, height, weight);
+			crud_update(index, name, height, weight, age);
 		});
 		
 		document.getElementById("btn_edit_back").addEventListener("click", function(e) {
@@ -219,7 +239,7 @@
 			draw_table();
 		});
 		
-		// A betöltéskor jelenjen meg a táblázat
+		// A betöltéskor a táblázat megjelenítése
 		draw_table();
 	</script>
 	<style>
