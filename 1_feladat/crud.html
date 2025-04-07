@@ -71,23 +71,30 @@
     </div>
     <footer>Készítők neptun kódja: NCCDTY, UXPEB6</footer>
 	<script>
-		data		= [];
-		function crud_create(name, height, weight)
-		{
-			data[data.length]	=	{
-				id: data.length + 1,
+		// Előre feltöltött adatok
+		let data = [
+			{ id: 1, name: "Bálint", height: "177", weight: "75" },
+			{ id: 2, name: "Csaba", height: "178", weight: "90" },
+			{ id: 3, name: "Elemér", height: "218", weight: "120" }
+		];
+		// Következő id érték
+		let nextId = 4;
+
+		function crud_create(name, height, weight) {
+			data.push({
+				id: nextId,
 				name: name,
 				height: height,
-				weight: weight,
-			};
+				weight: weight
+			});
+			nextId++;
 			draw_table();
 			
 			return false;
 		}
 
-		function crud_update(index, name, height, weight)
-		{
-			data[index]	=	{
+		function crud_update(index, name, height, weight) {
+			data[index] = {
 				id: data[index].id,
 				name: name,
 				height: height,
@@ -99,8 +106,7 @@
 			return false;
 		}
 
-		function crud_delete(index)
-		{
+		function crud_delete(index) {
 			delete data[index];
 			draw_table();
 			
@@ -116,12 +122,11 @@
 				.replace(/'/g, "&#039;");
 		}
 		
-		function draw_table()
-		{
-			let filter		= document.getElementById("crud_filter").value.toLowerCase();
+		function draw_table() {
+			let filter = document.getElementById("crud_filter").value.toLowerCase();
 		
-			let orderField	= document.getElementById("crud_order_field").value;
-			let order		= document.getElementById("crud_order").value;
+			let orderField = document.getElementById("crud_order_field").value;
+			let order = document.getElementById("crud_order").value;
 		
 			if(orderField == "name") {
 				data.sort((a, b) => a[orderField].localeCompare(b[orderField]) * (order == "asc" ? -1 : 1));
@@ -129,39 +134,39 @@
 				data.sort((a, b) => (Number(a[orderField]) - Number(b[orderField])) * (order == "asc" ? -1 : 1));
 			}
 		
-			str	= "<table>";
-			str	+= "<thead><tr><th>#</th><th>Név</th><th>Magasság</th><th>Tömeg</th><th></th></tr></thead>";
-			for(i = 0; i < data.length; i++) {
+			let str = "<table>";
+			str += "<thead><tr><th>#</th><th>Név</th><th>Magasság</th><th>Tömeg</th><th></th></tr></thead>";
+			for(let i = 0; i < data.length; i++) {
 				if(typeof data[i] == "undefined") { // törölt sor
 					continue;
 				}
 				if(!data[i].name.toLowerCase().includes(filter) && !data[i].height.toLowerCase().includes(filter) && !data[i].weight.toLowerCase().includes(filter)) {
 					continue;
 				}
-				str	+= "<tr id=\"list_item_" + i + "\">";
-				str	+= "<td>#" + (data[i].id) + "</td>";
-				str	+= "<td class=\"col_name\">" + escapeHtml(data[i].name) + "</td>";
-				str	+= "<td class=\"col_height\">" + escapeHtml(data[i].height) + "</td>";
-				str	+= "<td class=\"col_weight\">" + escapeHtml(data[i].weight) + "</td>";
-				str	+= "<td><a class=\"list_item_delete\" data-index=\"" + i + "\" href=\"#\">Törlés</a> | <a class=\"list_item_edit\" data-index=\"" + i + "\" href=\"#\">Szerkeszt</a></td>";
-				str	+= "</tr>";
+				str += "<tr id=\"list_item_" + i + "\">";
+				str += "<td>#" + data[i].id + "</td>";
+				str += "<td class=\"col_name\">" + escapeHtml(data[i].name) + "</td>";
+				str += "<td class=\"col_height\">" + escapeHtml(data[i].height) + "</td>";
+				str += "<td class=\"col_weight\">" + escapeHtml(data[i].weight) + "</td>";
+				str += "<td><a class=\"list_item_delete\" data-index=\"" + i + "\" href=\"#\">Törlés</a> | <a class=\"list_item_edit\" data-index=\"" + i + "\" href=\"#\">Szerkeszt</a></td>";
+				str += "</tr>";
 			}
 			str += "</table>";
-			document.getElementById("crud_list").innerHTML	= str;
+			document.getElementById("crud_list").innerHTML = str;
 			
-			elements	= document.getElementsByClassName("list_item_delete");
-			for (var i = 0; i < elements.length; i++) {
-				elements[i].addEventListener("click", function(e){
+			let elements = document.getElementsByClassName("list_item_delete");
+			for (let i = 0; i < elements.length; i++) {
+				elements[i].addEventListener("click", function(e) {
 					e.preventDefault();
 					crud_delete(this.getAttribute("data-index"));
 				});
 			}	
 			
-			elements	= document.getElementsByClassName("list_item_edit");
-			for (var i = 0; i < elements.length; i++) {
-				elements[i].addEventListener("click", function(e){
+			elements = document.getElementsByClassName("list_item_edit");
+			for (let i = 0; i < elements.length; i++) {
+				elements[i].addEventListener("click", function(e) {
 					e.preventDefault();
-					index	= this.getAttribute("data-index");
+					let index = this.getAttribute("data-index");
 					
 					document.getElementById("create_form").classList.add("d-none");
 					document.getElementById("edit_form").classList.remove("d-none");
@@ -176,21 +181,20 @@
 		
 		document.getElementById("create_form").addEventListener("submit", function(e) {
 			e.preventDefault();
-			let name	= document.getElementById("input_name").value;
-			let height	= document.getElementById("input_height").value;
-			let weight	= document.getElementById("input_weight").value;
+			let name = document.getElementById("input_name").value;
+			let height = document.getElementById("input_height").value;
+			let weight = document.getElementById("input_weight").value;
 			
 			crud_create(name, height, weight);
 			this.reset();
-			
 		});
 		
 		document.getElementById("edit_form").addEventListener("submit", function(e) {
 			e.preventDefault();
-			let index		= document.getElementById("input_index_update").value;
-			let name	= document.getElementById("input_name_update").value;
-			let height	= document.getElementById("input_height_update").value;
-			let weight	= document.getElementById("input_weight_update").value;
+			let index = document.getElementById("input_index_update").value;
+			let name = document.getElementById("input_name_update").value;
+			let height = document.getElementById("input_height_update").value;
+			let weight = document.getElementById("input_weight_update").value;
 			
 			document.getElementById("create_form").classList.remove("d-none");
 			document.getElementById("edit_form").classList.add("d-none");
@@ -215,6 +219,8 @@
 			draw_table();
 		});
 		
+		// A betöltéskor jelenjen meg a táblázat
+		draw_table();
 	</script>
 	<style>
 		#crud_list > table {
