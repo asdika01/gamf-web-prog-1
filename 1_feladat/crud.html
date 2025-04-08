@@ -4,6 +4,21 @@
     <meta charset="utf-8">
     <title>Web-programozás-1 - CRUD</title>
     <link type="text/css" rel="stylesheet" href="style.css">
+    <style>
+        /* Tábla és egyéb stílusok – az eredeti formázást megtartottuk */
+        #crud_list table {
+            border-collapse: collapse;
+            margin: 10px;
+        }
+        #crud_list table td,
+        #crud_list table th {
+            border: 1px solid black;
+            padding: 10px;
+        }
+        .d-none {
+            display: none;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -24,238 +39,286 @@
     </aside>
     <div class="content">
         <h1>Crud functionality</h1>
+        <!-- Űrlapok: új rekord felvitele és szerkesztése -->
         <article>
-			<form id="create_form">
-				<label>
-					Név: <input type="text" name="name" placeholder="Név" minlength="5" id="input_name" required>
-				</label>
-				<label>
-					Magasság: <input type="number" name="height" placeholder="Magasság" id="input_height" min="0" required>
-				</label>
-				<label>
-					Tömeg: <input type="number" name="weight" min="0" max="1000" placeholder="Tömeg" id="input_weight" required>
-				</label>
-				<label>
-					Életkor: <input type="number" name="age" min="0" placeholder="Életkor" id="input_age" required>
-				</label>
-				<button type="submit">Hozzáadás</button>
-			</form>
-			<form id="edit_form" class="d-none">
-				<input type="hidden" name="id" id="input_index_update">
-				<label>
-					Név: <input type="text" name="name" placeholder="Név" minlength="5" id="input_name_update" required>
-				</label>
-				<label>
-					Magasság: <input type="number" name="height" placeholder="Magasság" id="input_height_update" min="0" required>
-				</label>
-				<label>
-					Tömeg: <input type="number" name="weight" placeholder="Tömeg" min="0" max="1000" id="input_weight_update" required>
-				</label>
-				<label>
-					Életkor: <input type="number" name="age" min="0" placeholder="Életkor" id="input_age_update" required>
-				</label>
-				<button type="submit">Szerkeszt</button>
-				<button type="button" id="btn_edit_back">Mégsem</button>
-			</form>
-		</article>
-		<article style="margin-top: 10px;">
-			Kereső:
-			<input type="text" id="crud_filter" placeholder="Keresés">
-			Sorrend:
-			<select id="crud_order_field">
-				<option value="id">Hozzáadás ideje</option>
-				<option value="name">Név</option>
-				<option value="height">Magasság</option>
-				<option value="weight">Tömeg</option>
-				<option value="age">Életkor</option>
-			</select>
-			<select id="crud_order">
-				<option value="asc">Csökkenő</option>
-				<option value="desc">Növekvő</option>
-			</select>
+            <!-- Új rekord felviteli űrlap -->
+            <form id="create_form">
+                <label>
+                    Név: <input type="text" name="name" placeholder="Név" minlength="5" id="input_name" required>
+                </label>
+                <label>
+                    Magasság: <input type="number" name="height" placeholder="Magasság" id="input_height" min="0" required>
+                </label>
+                <label>
+                    Tömeg: <input type="number" name="weight" min="0" max="1000" placeholder="Tömeg" id="input_weight" required>
+                </label>
+                <label>
+                    Életkor: <input type="number" name="age" min="0" placeholder="Életkor" id="input_age" required>
+                </label>
+                <button type="submit">Hozzáadás</button>
+            </form>
+            <!-- Szerkesztési űrlap -->
+            <form id="edit_form" class="d-none">
+                <input type="hidden" name="id" id="input_index_update">
+                <label>
+                    Név: <input type="text" name="name" placeholder="Név" minlength="5" id="input_name_update" required>
+                </label>
+                <label>
+                    Magasság: <input type="number" name="height" placeholder="Magasság" id="input_height_update" min="0" required>
+                </label>
+                <label>
+                    Tömeg: <input type="number" name="weight" placeholder="Tömeg" min="0" max="1000" id="input_weight_update" required>
+                </label>
+                <label>
+                    Életkor: <input type="number" name="age" min="0" placeholder="Életkor" id="input_age_update" required>
+                </label>
+                <button type="submit">Szerkeszt</button>
+                <button type="button" id="btn_edit_back">Mégsem</button>
+            </form>
         </article>
+        <!-- Kereső és sorrendezési beállítások -->
+        <article style="margin-top: 10px;">
+            Kereső:
+            <input type="text" id="crud_filter" placeholder="Keresés">
+            Sorrend:
+            <select id="crud_order_field">
+                <option value="id">Hozzáadás ideje</option>
+                <option value="name">Név</option>
+                <option value="height">Magasság</option>
+                <option value="weight">Tömeg</option>
+                <option value="age">Életkor</option>
+            </select>
+            <select id="crud_order">
+                <option value="asc">Csökkenő</option>
+                <option value="desc">Növekvő</option>
+            </select>
+        </article>
+        <!-- Dinamikusan létrejövő tábla -->
         <article id="crud_list"></article>
     </div>
     <footer>Készítők neptun kódja: NCCDTY, UXPEB6</footer>
-	<script>
-		// Előre feltöltött adatok az új oszloppal (Életkor)
-		let data = [
-			{ id: 1, name: "Bálint", height: "177", weight: "75", age: "35" },
-			{ id: 2, name: "Csaba", height: "178", weight: "90", age: "38" },
-			{ id: 3, name: "Elemér", height: "218", weight: "120", age: "1000" }
-		];
-		
-		// Következő id érték
-		let nextId = 4;
+    <script>
+        var selectedRow = null;
+        var nextId = 4; // Az initial rekordok id-je: 1, 2, 3
 
-		function crud_create(name, height, weight, age) {
-			data.push({
-				id: nextId,
-				name: name,
-				height: height,
-				weight: weight,
-				age: age
-			});
-			nextId++;
-			draw_table();
-			
-			return false;
-		}
+        // Új rekord beszúrása a táblázatba. Ha a presetId meg van adva, azt használjuk, különben a global nextId-t.
+        function insertNewRecord(data, presetId) {
+            var container = document.getElementById("crud_list");
+            var table = container.querySelector("table");
+            if (!table) {
+                table = document.createElement("table");
+                table.id = "employeeList";
+                var thead = document.createElement("thead");
+                // A fejlécből a "#" oszlopot kihagyjuk
+                var headerRow = document.createElement("tr");
+                headerRow.innerHTML = "<th>Név</th><th>Magasság</th><th>Tömeg</th><th>Életkor</th><th>Műveletek</th>";
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+                var tbody = document.createElement("tbody");
+                table.appendChild(tbody);
+                container.appendChild(table);
+            }
+            var tbody = table.getElementsByTagName("tbody")[0];
+            var newRow = tbody.insertRow(tbody.rows.length);
+            // Adat-id beállítása (nem látható, de szükséges a sorrendezéshez)
+            if (presetId !== undefined) {
+                newRow.setAttribute("data-id", presetId);
+            } else {
+                newRow.setAttribute("data-id", nextId);
+                nextId++;
+            }
+            var cell1 = newRow.insertCell(0);
+            cell1.innerHTML = data.name;
+            var cell2 = newRow.insertCell(1);
+            cell2.innerHTML = data.height;
+            var cell3 = newRow.insertCell(2);
+            cell3.innerHTML = data.weight;
+            var cell4 = newRow.insertCell(3);
+            cell4.innerHTML = data.age;
+            var cell5 = newRow.insertCell(4);
+            cell5.innerHTML = '<a href="#" onClick="onEdit(this)">Szerkeszt</a> | <a href="#" onClick="onDelete(this)">Törlés</a>';
 
-		function crud_update(index, name, height, weight, age) {
-			data[index] = {
-				id: data[index].id,
-				name: name,
-				height: height,
-				weight: weight,
-				age: age
-			};
-			
-			draw_table();
-			
-			return false;
-		}
+            // Mivel új rekord került beillesztésre, újrarajzoljuk a szűrést és a sorrendezést
+            filterAndSortTable();
+        }
 
-		function crud_delete(index) {
-			delete data[index];
-			draw_table();
-			
-			return false;
-		}
-		
-		function escapeHtml(text) {
-			return text
-				.replace(/&/g, "&amp;")
-				.replace(/</g, "&lt;")
-				.replace(/>/g, "&gt;")
-				.replace(/"/g, "&quot;")
-				.replace(/'/g, "&#039;");
-		}
-		
-		function draw_table() {
-			let filter = document.getElementById("crud_filter").value.toLowerCase();
-		
-			let orderField = document.getElementById("crud_order_field").value;
-			let order = document.getElementById("crud_order").value;
-		
-			if(orderField == "name") {
-				data.sort((a, b) => a[orderField].localeCompare(b[orderField]) * (order == "asc" ? -1 : 1));
-			} else {
-				data.sort((a, b) => (Number(a[orderField]) - Number(b[orderField])) * (order == "asc" ? -1 : 1));
-			}
-		
-			let str = "<table>";
-			str += "<thead><tr><th>#</th><th>Név</th><th>Magasság</th><th>Tömeg</th><th>Életkor</th><th></th></tr></thead>";
-			for(let i = 0; i < data.length; i++) {
-				if(typeof data[i] == "undefined") { // törölt sor
-					continue;
-				}
-				// Filter ellenőrzése az új "age" mezőre is
-				if(!data[i].name.toLowerCase().includes(filter) && 
-				   !data[i].height.toLowerCase().includes(filter) && 
-				   !data[i].weight.toLowerCase().includes(filter) &&
-				   !data[i].age.toLowerCase().includes(filter)) {
-					continue;
-				}
-				str += "<tr id=\"list_item_" + i + "\">";
-				str += "<td>#" + data[i].id + "</td>";
-				str += "<td class=\"col_name\">" + escapeHtml(data[i].name) + "</td>";
-				str += "<td class=\"col_height\">" + escapeHtml(data[i].height) + "</td>";
-				str += "<td class=\"col_weight\">" + escapeHtml(data[i].weight) + "</td>";
-				str += "<td class=\"col_age\">" + escapeHtml(data[i].age) + "</td>";
-				str += "<td><a class=\"list_item_delete\" data-index=\"" + i + "\" href=\"#\">Törlés</a> | <a class=\"list_item_edit\" data-index=\"" + i + "\" href=\"#\">Szerkeszt</a></td>";
-				str += "</tr>";
-			}
-			str += "</table>";
-			document.getElementById("crud_list").innerHTML = str;
-			
-			let elements = document.getElementsByClassName("list_item_delete");
-			for (let i = 0; i < elements.length; i++) {
-				elements[i].addEventListener("click", function(e) {
-					e.preventDefault();
-					crud_delete(this.getAttribute("data-index"));
-				});
-			}	
-			
-			elements = document.getElementsByClassName("list_item_edit");
-			for (let i = 0; i < elements.length; i++) {
-				elements[i].addEventListener("click", function(e) {
-					e.preventDefault();
-					let index = this.getAttribute("data-index");
-					
-					document.getElementById("create_form").classList.add("d-none");
-					document.getElementById("edit_form").classList.remove("d-none");
-					
-					document.getElementById("input_index_update").value = index;
-					document.getElementById("input_name_update").value = data[index].name;
-					document.getElementById("input_height_update").value = data[index].height;
-					document.getElementById("input_weight_update").value = data[index].weight;
-					document.getElementById("input_age_update").value = data[index].age;
-				});
-			}	
-		}
-		
-		// Új elem hozzáadásakor
-		document.getElementById("create_form").addEventListener("submit", function(e) {
-			e.preventDefault();
-			let name = document.getElementById("input_name").value;
-			let height = document.getElementById("input_height").value;
-			let weight = document.getElementById("input_weight").value;
-			let age = document.getElementById("input_age").value;
-			
-			crud_create(name, height, weight, age);
-			this.reset();
-		});
-		
-		// Elem szerkesztése
-		document.getElementById("edit_form").addEventListener("submit", function(e) {
-			e.preventDefault();
-			let index = document.getElementById("input_index_update").value;
-			let name = document.getElementById("input_name_update").value;
-			let height = document.getElementById("input_height_update").value;
-			let weight = document.getElementById("input_weight_update").value;
-			let age = document.getElementById("input_age_update").value;
-			
-			document.getElementById("create_form").classList.remove("d-none");
-			document.getElementById("edit_form").classList.add("d-none");
-			
-			crud_update(index, name, height, weight, age);
-		});
-		
-		document.getElementById("btn_edit_back").addEventListener("click", function(e) {
-			document.getElementById("create_form").classList.remove("d-none");
-			document.getElementById("edit_form").classList.add("d-none");
-		});
-		
-		document.getElementById("crud_filter").addEventListener("keyup", function(e) {
-			draw_table();
-		});
-		
-		document.getElementById("crud_order_field").addEventListener("change", function(e) {
-			draw_table();
-		});
-		
-		document.getElementById("crud_order").addEventListener("change", function(e) {
-			draw_table();
-		});
-		
-		// A betöltéskor a táblázat megjelenítése
-		draw_table();
-	</script>
-	<style>
-		#crud_list > table {
-			border-collapse: collapse;
-			margin:10px;
-		}
-		
-		#crud_list > table td, #crud_list > table th {
-			border:1px solid black;
-			padding:10px;
-		}
-		
-		.d-none {
-			display:none;
-		}
-	</style>
+        // Új rekord felvitelének kezelése
+        document.getElementById("create_form").addEventListener("submit", function(e) {
+            e.preventDefault();
+            if (validateCreateForm()) {
+                var formData = readCreateFormData();
+                insertNewRecord(formData);
+                resetCreateForm();
+            }
+        });
+
+        // Rekord szerkesztésének kezelése
+        document.getElementById("edit_form").addEventListener("submit", function(e) {
+            e.preventDefault();
+            if (validateEditForm()) {
+                var formData = readEditFormData();
+                updateRecord(formData);
+                resetEditForm();
+            }
+        });
+
+        // "Mégsem" gomb a szerkesztési űrlapon
+        document.getElementById("btn_edit_back").addEventListener("click", function() {
+            resetEditForm();
+        });
+
+        // Egyszerű űrlap-validáció
+        function validateCreateForm() {
+            var name = document.getElementById("input_name").value;
+            var height = document.getElementById("input_height").value;
+            var weight = document.getElementById("input_weight").value;
+            var age = document.getElementById("input_age").value;
+            if (name === "" || height === "" || weight === "" || age === "") {
+                alert("Kérlek töltsd ki az összes mezőt!");
+                return false;
+            }
+            return true;
+        }
+        function validateEditForm() {
+            var name = document.getElementById("input_name_update").value;
+            var height = document.getElementById("input_height_update").value;
+            var weight = document.getElementById("input_weight_update").value;
+            var age = document.getElementById("input_age_update").value;
+            if (name === "" || height === "" || weight === "" || age === "") {
+                alert("Kérlek töltsd ki az összes mezőt!");
+                return false;
+            }
+            return true;
+        }
+
+        // Adatok beolvasása a create_form-ból
+        function readCreateFormData() {
+            return {
+                name: document.getElementById("input_name").value,
+                height: document.getElementById("input_height").value,
+                weight: document.getElementById("input_weight").value,
+                age: document.getElementById("input_age").value
+            };
+        }
+        // Adatok beolvasása az edit_form-ból
+        function readEditFormData() {
+            return {
+                name: document.getElementById("input_name_update").value,
+                height: document.getElementById("input_height_update").value,
+                weight: document.getElementById("input_weight_update").value,
+                age: document.getElementById("input_age_update").value
+            };
+        }
+
+        // Űrlapok törlése
+        function resetCreateForm() {
+            document.getElementById("input_name").value = "";
+            document.getElementById("input_height").value = "";
+            document.getElementById("input_weight").value = "";
+            document.getElementById("input_age").value = "";
+        }
+        function resetEditForm() {
+            document.getElementById("edit_form").reset();
+            document.getElementById("edit_form").classList.add("d-none");
+            document.getElementById("create_form").classList.remove("d-none");
+            selectedRow = null;
+        }
+
+        // Rekord szerkesztésének elindítása
+        function onEdit(td) {
+            selectedRow = td.parentElement.parentElement;
+            document.getElementById("create_form").classList.add("d-none");
+            document.getElementById("edit_form").classList.remove("d-none");
+            document.getElementById("input_name_update").value = selectedRow.cells[0].innerHTML;
+            document.getElementById("input_height_update").value = selectedRow.cells[1].innerHTML;
+            document.getElementById("input_weight_update").value = selectedRow.cells[2].innerHTML;
+            document.getElementById("input_age_update").value = selectedRow.cells[3].innerHTML;
+        }
+
+        // Rekord módosítása
+        function updateRecord(formData) {
+            selectedRow.cells[0].innerHTML = formData.name;
+            selectedRow.cells[1].innerHTML = formData.height;
+            selectedRow.cells[2].innerHTML = formData.weight;
+            selectedRow.cells[3].innerHTML = formData.age;
+            filterAndSortTable();
+        }
+
+        // Rekord törlése
+        function onDelete(td) {
+            if (confirm("Biztosan törölni akarod a rekordot?")) {
+                var row = td.parentElement.parentElement;
+                row.parentElement.removeChild(row);
+                resetEditForm();
+                filterAndSortTable();
+            }
+        }
+
+        // Szűrés és sorrendezés: a kereső és a sorrendezési beállítások alapján átrendezzük a DOM-ban lévő táblázat sorait.
+        function filterAndSortTable() {
+            var filter = document.getElementById("crud_filter").value.toLowerCase();
+            var orderField = document.getElementById("crud_order_field").value;
+            var order = document.getElementById("crud_order").value;
+            var table = document.getElementById("employeeList");
+            if (!table) return;
+            var tbody = table.getElementsByTagName("tbody")[0];
+            var rows = Array.from(tbody.rows);
+
+            // Szűrés: az első 4 cellát vizsgáljuk (Név, Magasság, Tömeg, Életkor)
+            rows.forEach(function(row) {
+                var cellsText = "";
+                for (var i = 0; i < 4; i++) {
+                    cellsText += row.cells[i].textContent.toLowerCase() + " ";
+                }
+                row.style.display = (cellsText.indexOf(filter) > -1) ? "" : "none";
+            });
+
+            // Sorrendezés: a kiválasztott mező és sorrend alapján
+            rows.sort(function(a, b) {
+                var valA, valB;
+                if (orderField === "id") {
+                    valA = parseInt(a.getAttribute("data-id"));
+                    valB = parseInt(b.getAttribute("data-id"));
+                } else if (orderField === "name") {
+                    valA = a.cells[0].textContent.toLowerCase();
+                    valB = b.cells[0].textContent.toLowerCase();
+                } else if (orderField === "height") {
+                    valA = parseFloat(a.cells[1].textContent);
+                    valB = parseFloat(b.cells[1].textContent);
+                } else if (orderField === "weight") {
+                    valA = parseFloat(a.cells[2].textContent);
+                    valB = parseFloat(b.cells[2].textContent);
+                } else if (orderField === "age") {
+                    valA = parseFloat(a.cells[3].textContent);
+                    valB = parseFloat(b.cells[3].textContent);
+                }
+                var comparison = 0;
+                if (orderField === "name") {
+                    comparison = valA.localeCompare(valB);
+                } else {
+                    comparison = valA - valB;
+                }
+                // Az eredeti logikát követve: ha az order értéke "asc", akkor az eredményt -1-el szorozzuk (így Csökkenő lesz), ha "desc", akkor marad
+                return comparison * (order === "asc" ? -1 : 1);
+            });
+
+            // Újrabeillesztjük a sorokat a tbody-be a rendezett sorrend szerint
+            rows.forEach(function(row) {
+                tbody.appendChild(row);
+            });
+        }
+
+        // Eseménykezelők a kereső és sorrendezési mezőkhöz
+        document.getElementById("crud_filter").addEventListener("keyup", filterAndSortTable);
+        document.getElementById("crud_order_field").addEventListener("change", filterAndSortTable);
+        document.getElementById("crud_order").addEventListener("change", filterAndSortTable);
+
+        // Oldalbetöltéskor feltöltjük a tábla alapértelmezett adatait
+        window.onload = function() {
+            insertNewRecord({ name: "Bálint", height: "177", weight: "75", age: "35" }, 1);
+            insertNewRecord({ name: "Csaba", height: "178", weight: "90", age: "38" }, 2);
+            insertNewRecord({ name: "Elemér", height: "218", weight: "120", age: "1000" }, 3);
+        };
+    </script>
 </body>
 </html>
